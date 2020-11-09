@@ -3,6 +3,8 @@ from . import models
 
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(min_length = 8)
+    email = serializers.EmailField(max_length = 500)
     password2 = serializers.CharField(write_only = True)
 
     class Meta:
