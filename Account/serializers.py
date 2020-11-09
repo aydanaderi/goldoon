@@ -3,18 +3,22 @@ from . import models
 
 
 class UserSerializer(serializers.ModelSerializer):
-
-    password = serializers.CharField(write_only = True)
-
-    def create(self, validated_data):
-
-        user = models.Information.objects.create(
-            username = validated_data['username']
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-
-        return user
+    password2 = serializers.CharField(write_only = True)
 
     class Meta:
-        model = models.Information
+        model = models.User
+        fields = ['username','password','password2','email']
+        extra_kwargs = {
+            'password' : {'write_only' : True}
+        }
+
+    def save(self):
+        user = models.User.objects.create(
+            username=self.validated_data['username'],
+            email=self.validated_data['email'],
+        )
+        password = self.validated_data['password']
+        user.password = password
+        user.save()
+        return user
+
