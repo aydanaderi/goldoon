@@ -1,23 +1,15 @@
 from rest_framework import serializers
-from django.core.validators import RegexValidator
 from .models import User
 
 class CreateUserSerializer(serializers.ModelSerializer):
-    alphanumeric = RegexValidator(r'^[0-9a-zA-Z]*$', 'use correct charactors.')
-    username = serializers.CharField(min_length = 5,max_length=50,validators=[alphanumeric])
-    password = serializers.CharField(min_length = 8,max_length=50, validators=[alphanumeric])
-    password2 = serializers.CharField(max_length = 50,validators = [alphanumeric],write_only = True)
 
-    def validate_password(self, password,password2):
-
-        if password != password2 :
-            raise serializers.ValidationError("tow password did not match.")
+    def validate(self, data):
+        if len(data.get('username')) < 5 :
+            raise serializers.ValidationError("username is too short")
+        elif len(data.get('password')) < 8 :
+            raise serializers.ValidationError("password is too common")
         else :
-            return password
-
-    def create(self,validated_data):
-        obj = super().create(validated_data)
-        return obj
+            return data
 
     class Meta :
         model = User
