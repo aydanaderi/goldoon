@@ -6,3 +6,4 @@ class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = CreateUserSerializer
     lookup_field = id
+
