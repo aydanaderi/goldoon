@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics,viewsets
 from .models import User
 from .serializers import CreateUserSerializer
 
