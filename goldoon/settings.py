@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'knox',
+    'django_rest_passwordreset',
     'Account',
     'Home',
 ]
@@ -88,6 +90,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'knox.auth.TokenAuthentication',
     ]
 }
 
@@ -132,7 +135,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MEDIA_URL = '/media/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST_USER = 'ayda.f.naderi@gmail.com'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
