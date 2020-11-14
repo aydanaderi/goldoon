@@ -1,65 +1,55 @@
-from knox.models import AuthToken
-from .serializers import UserSerializer, RegisterSerializer
+from .serializers import UserSerializer, RegisterSerializer,ChangePasswordSerializer
+from django_rest_passwordreset.signals import reset_password_token_created
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework import status,generics,permissions
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import login
-from rest_framework import status
-from rest_framework import generics
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .serializers import ChangePasswordSerializer
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import permissions
-from rest_framework.authtoken.serializers import AuthTokenSerializer
 from knox.views import LoginView as KnoxLoginView
 from django.dispatch import receiver
 from django.urls import reverse
-from django_rest_passwordreset.signals import reset_password_token_created
 from django.core.mail import send_mail
+from knox.models import AuthToken
 
-
-# Register API
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer = self.get_serializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
         user = serializer.save()
         return Response({
-        "user": UserSerializer(user, context=self.get_serializer_context()).data,
+        "user": UserSerializer(user, context = self.get_serializer_context()).data,
         "token": AuthToken.objects.create(user)[1]
         })
 
 class LoginAPI(KnoxLoginView):
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+    def post(self, request, format = None):
+        serializer = AuthTokenSerializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
         user = serializer.validated_data['user']
         login(request, user)
-        return super(LoginAPI, self).post(request, format=None)
+        return super(LoginAPI, self).post(request, format = None)
 
 class ChangePasswordView(generics.UpdateAPIView):
-    """
-    An endpoint for changing password.
-    """
     serializer_class = ChangePasswordSerializer
     model = User
     permission_classes = (IsAuthenticated,)
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset = None):
         obj = self.request.user
         return obj
 
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data = request.data)
 
         if serializer.is_valid():
-            # Check old password
             if not self.object.check_password(serializer.data.get("old_password")):
-                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
-            # set_password also hashes the password that the user will get
+                return Response({"old_password": ["Wrong password."]}, status = status.HTTP_400_BAD_REQUEST)
             self.object.set_password(serializer.data.get("new_password"))
             self.object.save()
             response = {
@@ -82,11 +72,11 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 
     send_mail(
         # title:
-        "Password Reset for {title}".format(title="Some website title"),
+        "Password Reset for {title}".format(title = "Some website title"),
         # message:
         email_plaintext_message,
         # from:
-        "noreply@somehost.local",
+        "ayda.f.naderi@gmail.com",
         # to:
         [reset_password_token.user.email]
     )
