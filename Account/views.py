@@ -4,11 +4,11 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import status,generics,permissions
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import login
+from django.conf import settings
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from knox.views import LoginView as KnoxLoginView
 from django.dispatch import receiver
-from django.urls import reverse
 from django.core.mail import send_mail
 from knox.models import AuthToken
 
@@ -20,6 +20,11 @@ class RegisterAPI(generics.GenericAPIView):
         serializer.is_valid(raise_exception = True)
         user = serializer.save()
         login(request, user)
+        subject = "signed up"
+        message = 'hello!\nyou singed up successfully'
+        email_from = settings.EMAIL_HOST_USER
+        recipient_list = [user.email, ]
+        send_mail(subject, message, email_from, recipient_list)
         return Response({
         "user": UserSerializer(user, context = self.get_serializer_context()).data,
         "token": AuthToken.objects.create(user)[1]
@@ -64,20 +69,10 @@ class ChangePasswordView(generics.UpdateAPIView):
 
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
-
-
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-
-    email_plaintext_message = "{}?token={}".format(reverse('password_reset:reset-password-request'), reset_password_token.key)
-
-    send_mail(
-        # title:
-        "Password Reset for {title}".format(title = "Some website title"),
-        # message:
-        email_plaintext_message,
-        # from:
-        "ayda.f.naderi@gmail.com",
-        # to:
-        [reset_password_token.user.email]
-    )
+    subject = "Password Reset for password"
+    message = 'http://127.0.0.1:8000/password_reset/confirm/' + '\nenter the '+ reset_password_token.key + ' in Token'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [reset_password_token.user.email,]
+    send_mail(subject, message, email_from, recipient_list)
