@@ -11,6 +11,15 @@ from knox.views import LoginView as KnoxLoginView
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from knox.models import AuthToken
+from . import models
+from rest_framework.decorators import api_view
+
+"""@api_view(['GET'])
+def print(request):
+    user = models.User.objects.get(username = request.query_params['username'])
+    us = UserSerializer(user)
+    return Response(us.data,status = status.HTTP_200_OK)
+"""
 
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
