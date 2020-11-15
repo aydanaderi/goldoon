@@ -1,4 +1,4 @@
-from .serializers import UserSerializer, RegisterSerializer,ChangePasswordSerializer,UsSerializer
+from .serializers import UserSerializer, RegisterSerializer,ChangePasswordSerializer
 from django_rest_passwordreset.signals import reset_password_token_created
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import status,generics,permissions
@@ -11,24 +11,7 @@ from knox.views import LoginView as KnoxLoginView
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from knox.models import AuthToken
-from . import models
-from rest_framework.decorators import api_view
 
-"""@api_view(['GET'])
-def print(request):
-    user = models.User.objects.get(username = request.query_params['username'])
-    us = UserSerializer(user)
-    return Response(us.data,status = status.HTTP_200_OK)
-"""
-"""@api_view(['GET'])
-def SignupView(request):
-    us = UsSerializer(request.query_params['username'],request.query_params['password'])
-    us.is_valid(raise_exception = True)
-    user = us.save()
-    login(request,user)
-    return Response(user.data,status = status.HTTP_200_OK)"""
-
-"""
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
@@ -92,4 +75,4 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     message = 'http://127.0.0.1:8000/password_reset/confirm/' + '\nenter the '+ reset_password_token.key + ' in Token'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [reset_password_token.user.email,]
-    send_mail(subject, message, email_from, recipient_list)"""
+    send_mail(subject, message, email_from, recipient_list)
