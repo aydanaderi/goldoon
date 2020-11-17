@@ -54,27 +54,25 @@ class ChangePasswordView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
         serializer = self.get_serializer(data = request.data)
-
         if serializer.is_valid():
             if not self.object.check_password(serializer.data.get("old_password")):
                 return Response({"old_password": ["Wrong password."]}, status = status.HTTP_400_BAD_REQUEST)
             self.object.set_password(serializer.data.get("new_password"))
             self.object.save()
+            models.User.objects.filter(username = self.request.user).update(password=serializer.data.get("new_password"))
             response = {
                 'status': 'success',
                 'code': status.HTTP_200_OK,
                 'message': 'Password updated successfully',
                 'data': []
             }
-
             return Response(response)
-
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
     subject = "Password Reset for password"
-    message = 'http://goldoonestan.ir/password_reset/confirm/' + '\nenter the '+ reset_password_token.key + ' in Token'
+    message = 'http://127.0.0.1:8000/password_reset/confirm/' + '\nenter the '+ reset_password_token.key + ' in Token'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [reset_password_token.user.email,]
     send_mail(subject, message, email_from, recipient_list)

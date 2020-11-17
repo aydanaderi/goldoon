@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
@@ -7,6 +8,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email')
 
 class RegisterSerializer(serializers.ModelSerializer):
+    alphanumeric = RegexValidator(r'^[0-9a-zA-Z]*$', 'use correct charactors.')
+    username =  serializers.CharField(min_length = 5,max_length = 50,validators = [alphanumeric])
+    password = serializers.CharField(min_length = 8,max_length = 50,validators = [alphanumeric])
     profile = serializers.ImageField(default = 'pic.jpg')
     class Meta:
         model = User

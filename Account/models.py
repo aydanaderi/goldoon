@@ -1,11 +1,9 @@
-from django.core.validators import RegexValidator
 from django.db import models
 
 class User(models.Model) :
-    username =  models.CharField(max_length = 50)
-    alphanumeric = RegexValidator(r'^[0-9a-zA-Z]*$', 'use correct charactors.')
-    password = models.CharField(max_length = 50,validators = [alphanumeric])
-    email = models.EmailField(max_length = 100)
+    username =  models.CharField(max_length = 150)
+    password = models.CharField(max_length = 150)
+    email = models.EmailField(max_length = 200)
     profile = models.ImageField(default = 'pic.jpg',null = True,blank = True)
 
     def __str__(self):
