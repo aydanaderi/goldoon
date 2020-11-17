@@ -2,7 +2,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 class User(models.Model) :
-    username =  models.CharField(max_length = 50,unique = True)
+    username =  models.CharField(max_length = 50)
     alphanumeric = RegexValidator(r'^[0-9a-zA-Z]*$', 'use correct charactors.')
     password = models.CharField(max_length = 50,validators = [alphanumeric])
     email = models.EmailField(max_length = 100)

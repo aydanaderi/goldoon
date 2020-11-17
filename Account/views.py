@@ -1,4 +1,3 @@
-from .serializers import UserSerializer, RegisterSerializer,ChangePasswordSerializer
 from django_rest_passwordreset.signals import reset_password_token_created
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import status,generics,permissions
@@ -11,14 +10,17 @@ from knox.views import LoginView as KnoxLoginView
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from knox.models import AuthToken
+from . import models,serializers
 
 class RegisterAPI(generics.GenericAPIView):
-    serializer_class = RegisterSerializer
+    serializer_class = serializers.RegisterSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data = request.data)
         serializer.is_valid(raise_exception = True)
         user = serializer.save()
+        models.User.objects.create(username = request.data['username'],password = request.data['password'],
+                                             email = request.data['email'],profile = request.data['profile'])
         login(request, user)
         subject = "signed up"
         message = 'hello!\nyou singed up successfully'
@@ -26,7 +28,7 @@ class RegisterAPI(generics.GenericAPIView):
         recipient_list = [user.email, ]
         send_mail(subject, message, email_from, recipient_list)
         return Response({
-        "user": UserSerializer(user, context = self.get_serializer_context()).data,
+        "user": serializers.UserSerializer(user, context = self.get_serializer_context()).data,
         "token": AuthToken.objects.create(user)[1]
         })
 
@@ -41,7 +43,7 @@ class LoginAPI(KnoxLoginView):
         return super(LoginAPI, self).post(request, format = None)
 
 class ChangePasswordView(generics.UpdateAPIView):
-    serializer_class = ChangePasswordSerializer
+    serializer_class = serializers.ChangePasswordSerializer
     model = User
     permission_classes = (IsAuthenticated,)
 
