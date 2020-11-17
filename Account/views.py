@@ -72,7 +72,7 @@ class ChangePasswordView(generics.UpdateAPIView):
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
     subject = "Password Reset for password"
-    message = 'http://127.0.0.1:8000/password_reset/confirm/' + '\nenter the '+ reset_password_token.key + ' in Token'
+    message = 'http://goldoonestan.ir/password_reset/confirm/' + '\nenter the '+ reset_password_token.key + ' in Token'
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [reset_password_token.user.email,]
     send_mail(subject, message, email_from, recipient_list)
