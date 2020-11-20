@@ -7,5 +7,6 @@ urlpatterns = [
     path('login/', views.LoginAPI.as_view(), name = 'login'),
     path('logout/', knox_views.LogoutView.as_view(), name = 'logout'),
     path('change_password/', views.ChangePasswordView.as_view(), name = 'change-password'),
+    path('reset/', views.ResetPasswodView, name = 'reset'),
     path('password_reset/', include('django_rest_passwordreset.urls', namespace = 'password_reset')),
 ]

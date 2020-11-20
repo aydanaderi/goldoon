@@ -11,6 +11,8 @@ from django.dispatch import receiver
 from django.core.mail import send_mail
 from knox.models import AuthToken
 from . import models,serializers
+from  rest_framework.decorators import api_view
+from rest_framework.views import APIView
 
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = serializers.RegisterSerializer
@@ -69,10 +71,19 @@ class ChangePasswordView(generics.UpdateAPIView):
             return Response(response)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
-@receiver(reset_password_token_created)
-def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-    subject = "Password Reset for password"
-    message = 'http://127.0.0.1:8000/password_reset/confirm/' + '\nenter the '+ reset_password_token.key + ' in Token'
-    email_from = settings.EMAIL_HOST_USER
-    recipient_list = [reset_password_token.user.email,]
-    send_mail(subject, message, email_from, recipient_list)
+@api_view(['POST'])
+class ResetPasswodView(APIView):
+    def get_object(self, queryset = None):
+        serialize = serializers.ResetPasswordSerializer(data = self.request.data)
+        serialize.is_valid(raise_exception=True)
+        user = models.User.objects.filter(username = self.request.data['username'],email = self.request.data['email'])
+        if len(user) == 0 :
+            return Response({'error':'username or email is wrong'},status = status.HTTP_400_BAD_REQUEST)
+        return user
+    @receiver(reset_password_token_created)
+    def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+        subject = "Password Reset for password"
+        message = 'http://127.0.0.1:8000/password_reset/confirm/' + '\nenter the '+ reset_password_token.key + ' in Token'
+        email_from = settings.EMAIL_HOST_USER
+        recipient_list = [reset_password_token.user.email,]
+        send_mail(subject, message, email_from, recipient_list)

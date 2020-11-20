@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from rest_framework import serializers
+from . import models
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,3 +27,9 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     old_password = serializers.CharField(required = True)
     new_password = serializers.CharField(required = True)
+
+class ResetPasswordSerializer(serializers.Serializer):
+    class Meta:
+        model = models.User
+        fields = ('username', 'email')
+
