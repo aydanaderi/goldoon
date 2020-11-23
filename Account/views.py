@@ -1,18 +1,15 @@
-from django_rest_passwordreset.signals import reset_password_token_created
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import status,generics,permissions
 from rest_framework.permissions import IsAuthenticated
+from  rest_framework.decorators import api_view
 from django.contrib.auth import login
 from django.conf import settings
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from knox.views import LoginView as KnoxLoginView
-from django.dispatch import receiver
 from django.core.mail import send_mail
 from knox.models import AuthToken
 from . import models,serializers
-from  rest_framework.decorators import api_view
-from rest_framework.views import APIView
 
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = serializers.RegisterSerializer
@@ -40,6 +37,7 @@ class LoginAPI(KnoxLoginView):
     def post(self, request, format = None):
         serializer = AuthTokenSerializer(data = request.data)
         serializer.is_valid(raise_exception = True)
+        print(serializer)
         user = serializer.validated_data['user']
         login(request, user)
         return super(LoginAPI, self).post(request, format = None)
@@ -72,18 +70,30 @@ class ChangePasswordView(generics.UpdateAPIView):
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-class ResetPasswodView(APIView):
-    def get_object(self, queryset = None):
-        serialize = serializers.ResetPasswordSerializer(data = self.request.data)
-        serialize.is_valid(raise_exception=True)
-        user = models.User.objects.filter(username = self.request.data['username'],email = self.request.data['email'])
-        if len(user) == 0 :
-            return Response({'error':'username or email is wrong'},status = status.HTTP_400_BAD_REQUEST)
-        return user
-    @receiver(reset_password_token_created)
-    def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-        subject = "Password Reset for password"
-        message = 'http://127.0.0.1:8000/password_reset/confirm/' + '\nenter the '+ reset_password_token.key + ' in Token'
+def ResetPasswodView(request):
+    serializer = serializers.ResetPasswordSerializer(data = request.data)
+    serializer.is_valid(raise_exception = True)
+    user = models.User.objects.filter(username = request.data['username'],email = request.data['email'])
+    if len(user) != 0 :
+        subject = 'ًReset Password'
+        us = models.User.objects.get(username = request.data['username'],email = request.data['email'])
+        message = 'hello!\nyou want to reset your password!\nplease click on the link\nhttp://127.0.0.1:8000/'+ str(us.id) +'/reset/confirm/'
         email_from = settings.EMAIL_HOST_USER
-        recipient_list = [reset_password_token.user.email,]
+        recipient_list = [request.data['email'], ]
         send_mail(subject, message, email_from, recipient_list)
+        return Response({'user': 'please check your email' },status = status.HTTP_200_OK)
+    else :
+        return Response({'error' : 'username or email is wrong'},status = status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def ConfirmResetPasswodView(request,username_id):
+    serializer = serializers.ResetPasswordSerializer(data = request.data)
+    serializer.is_valid(raise_exception = True)
+    models.User.objects.filter(id = username_id).update(password = request.data['password'])
+    us = models.User.objects.get(id = username_id)
+    user = User.objects.get(username=us.username)
+    print(user)
+    user.set_password(request.data['password'])
+    user.save()
+    login(request,user)
+    return Response({'message': 'you reset your password!'}, status=status.HTTP_200_OK)
