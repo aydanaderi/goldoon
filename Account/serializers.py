@@ -35,3 +35,8 @@ class ResetPasswordSerializer(serializers.Serializer):
 class ConfirmResetPasswordSerializer(serializers.Serializer):
     model = User
     password = serializers.CharField(required = True)
+
+class ProfileSerializer(serializers.Serializer):
+    class Meta:
+        model = models.User
+        fields = ('id', 'username', 'email','profile')

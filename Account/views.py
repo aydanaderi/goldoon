@@ -1,7 +1,7 @@
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import status,generics,permissions
 from rest_framework.permissions import IsAuthenticated
-from  rest_framework.decorators import api_view
+from  rest_framework.decorators import api_view,permission_classes
 from django.contrib.auth import login
 from django.conf import settings
 from rest_framework.response import Response
@@ -10,6 +10,7 @@ from knox.views import LoginView as KnoxLoginView
 from django.core.mail import send_mail
 from knox.models import AuthToken
 from . import models,serializers
+from PIL import Image
 
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = serializers.RegisterSerializer
@@ -17,6 +18,7 @@ class RegisterAPI(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data = request.data)
         serializer.is_valid(raise_exception = True)
+        print('hi')
         user = serializer.save()
         models.User.objects.create(username = request.data['username'],password = request.data['password'],
                                              email = request.data['email'],profile = request.data['profile'])
@@ -96,3 +98,19 @@ def ConfirmResetPasswodView(request,username_id):
     user.save()
     login(request,user)
     return Response({'message': 'you reset your password!'}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ProfileView(request):
+    us = models.User.objects.get(username = request.user.username)
+    user = list()
+    user.append(us.id)
+    user.append(us.username)
+    user.append(us.email)
+    if us.profile != 'null' :
+        path = '/home/ayda/Documents/git/Plants/bin/goldoon/media/' + str(us.profile)
+        img = Image.open(path)
+        img.thumbnail((200, 200), Image.ANTIALIAS)
+        img.save(path, "PNG")
+        user.append(str(us.profile))
+    return Response({'user' : user},status = status.HTTP_200_OK)

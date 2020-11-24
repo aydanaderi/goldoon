@@ -38,8 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sorl.thumbnail',
     'rest_framework',
     'knox',
+    'easy_thumbnails',
+    'filer',
+    'mptt',
     'django_rest_passwordreset',
     'Account',
     'Home',
@@ -56,6 +60,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'goldoon.urls'
+
+THUMBNAIL_ALIASES = {
+    '': {
+        'avatar': {'size': (100, 100), 'crop': True},
+    },
+}
 
 TEMPLATES = [
     {

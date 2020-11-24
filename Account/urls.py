@@ -8,5 +8,6 @@ urlpatterns = [
     path('logout/', knox_views.LogoutView.as_view(), name = 'logout'),
     path('change_password/', views.ChangePasswordView.as_view(), name = 'change-password'),
     path('reset/', views.ResetPasswodView, name = 'Reset_Password'),
-    path('<int:username_id>/reset/confirm/', views.ConfirmResetPasswodView , name = 'confirm_Reset_password')
+    path('<int:username_id>/reset/confirm/', views.ConfirmResetPasswodView , name = 'confirm_Reset_password'),
+    path('profile/', views.ProfileView, name = 'profile'),
 ]
