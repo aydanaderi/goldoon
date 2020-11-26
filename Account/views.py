@@ -2,6 +2,7 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import status,generics,permissions
 from rest_framework.permissions import IsAuthenticated
 from  rest_framework.decorators import api_view,permission_classes
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import login
 from django.conf import settings
 from rest_framework.response import Response
@@ -100,15 +101,18 @@ def ConfirmResetPasswodView(request,username_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def ProfileView(request):
-    us = models.User.objects.get(username = request.user.username)
-    user = list()
-    user.append(us.id)
-    user.append(us.username)
-    user.append(us.email)
-    if us.profile != 'null' :
-        path = '/home/ayda/Documents/git/Plants/bin/goldoon/media/' + str(us.profile)
-        img = Image.open(path)
-        img.thumbnail((200, 200), Image.ANTIALIAS)
-        img.save(path, "PNG")
-        user.append(str(us.profile))
-    return Response({'user' : user},status = status.HTTP_200_OK)
+    us = get_object_or_404(models.User, username = request.user.username)
+    if len(us) != 0 :
+        user = list()
+        user.append(us.id)
+        user.append(us.username)
+        user.append(us.email)
+        if us.profile != 'null' :
+            path = '/home/ayda/Documents/git/Plants/bin/goldoon/media/' + str(us.profile)
+            img = Image.open(path)
+            img.thumbnail((200, 200), Image.ANTIALIAS)
+            img.save(path, "PNG")
+            user.append(str(us.profile))
+        return Response({'user' : user},status = status.HTTP_200_OK)
+    else :
+        return Response({'error': 'you are not authenticated'}, status=status.HTTP_400_BAD_REQUEST)
